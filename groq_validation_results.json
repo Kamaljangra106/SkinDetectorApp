@@ -1,0 +1,226 @@
+[
+  {
+    "skin_type": "oily",
+    "acne_severity": "moderate",
+    "fitzpatrick_estimate": "VI",
+    "primary_concerns": [
+      "acne",
+      "pores"
+    ],
+    "confidence": 0.8,
+    "image": "acne_dark_1.jpg",
+    "elapsed_s": 0.92
+  },
+  {
+    "skin_type": "combination",
+    "acne_severity": "moderate",
+    "fitzpatrick_estimate": "IV",
+    "primary_concerns": [
+      "acne",
+      "hyperpigmentation",
+      "scarring"
+    ],
+    "confidence": 0.8,
+    "image": "acne_dark_2.jpg",
+    "elapsed_s": 0.35
+  },
+  {
+    "skin_type": "combination",
+    "acne_severity": "moderate",
+    "fitzpatrick_estimate": "VI",
+    "primary_concerns": [
+      "acne",
+      "post-inflammatory hyperpigmentation"
+    ],
+    "confidence": 0.8,
+    "image": "acne_dark_3.jpg",
+    "elapsed_s": 0.43
+  },
+  {
+    "skin_type": "combination",
+    "acne_severity": "moderate",
+    "fitzpatrick_estimate": "IV",
+    "primary_concerns": [
+      "acne",
+      "post-inflammatory hyperpigmentation"
+    ],
+    "confidence": 0.8,
+    "image": "acne_dark_4.jpg",
+    "elapsed_s": 0.43
+  },
+  {
+    "skin_type": "oily",
+    "acne_severity": "mild",
+    "fitzpatrick_estimate": "IV",
+    "primary_concerns": [
+      "acne",
+      "hyperpigmentation",
+      "scarring"
+    ],
+    "confidence": 0.8,
+    "image": "acne_dark_5.jpg",
+    "elapsed_s": 0.44
+  },
+  {
+    "skin_type": "combination",
+    "acne_severity": "mild",
+    "fitzpatrick_estimate": "III",
+    "primary_concerns": [
+      "acne",
+      "redness"
+    ],
+    "confidence": 0.8,
+    "image": "acne_light_1.jpg",
+    "elapsed_s": 0.39
+  },
+  {
+    "skin_type": "combination",
+    "acne_severity": "moderate",
+    "fitzpatrick_estimate": "III",
+    "primary_concerns": [
+      "acne",
+      "redness"
+    ],
+    "confidence": 0.8,
+    "image": "acne_light_2.jpg",
+    "elapsed_s": 0.4
+  },
+  {
+    "skin_type": "combination",
+    "acne_severity": "moderate",
+    "fitzpatrick_estimate": "III",
+    "primary_concerns": [
+      "acne",
+      "redness"
+    ],
+    "confidence": 0.8,
+    "image": "acne_light_3.jpg",
+    "elapsed_s": 0.66
+  },
+  {
+    "skin_type": "combination",
+    "acne_severity": "mild",
+    "fitzpatrick_estimate": "III",
+    "primary_concerns": [
+      "acne",
+      "red spots"
+    ],
+    "confidence": 0.8,
+    "image": "acne_light_4.jpg",
+    "elapsed_s": 5.47
+  },
+  {
+    "skin_type": "combination",
+    "acne_severity": "moderate",
+    "fitzpatrick_estimate": "III",
+    "primary_concerns": [
+      "acne",
+      "redness",
+      "inflammation"
+    ],
+    "confidence": 0.8,
+    "image": "acne_light_5.jpg",
+    "elapsed_s": 5.61
+  },
+  {
+    "skin_type": "normal",
+    "acne_severity": "none",
+    "fitzpatrick_estimate": "III",
+    "primary_concerns": [],
+    "confidence": 0.8,
+    "image": "indian_skin_1.jpg",
+    "elapsed_s": 5.48
+  },
+  {
+    "skin_type": "normal",
+    "acne_severity": "none",
+    "fitzpatrick_estimate": "III",
+    "primary_concerns": [
+      "coloration from makeup or dye"
+    ],
+    "confidence": 0.8,
+    "image": "indian_skin_2.jpg",
+    "elapsed_s": 5.73
+  },
+  {
+    "skin_type": "combination",
+    "acne_severity": "mild",
+    "fitzpatrick_estimate": "IV",
+    "primary_concerns": [
+      "blackheads",
+      "pores"
+    ],
+    "confidence": 0.8,
+    "image": "indian_skin_3.jpg",
+    "elapsed_s": 5.51
+  },
+  {
+    "skin_type": "normal",
+    "acne_severity": "none",
+    "fitzpatrick_estimate": "IV",
+    "primary_concerns": [],
+    "confidence": 0.8,
+    "image": "indian_skin_4.jpg",
+    "elapsed_s": 5.4
+  },
+  {
+    "skin_type": "combination",
+    "acne_severity": "none",
+    "fitzpatrick_estimate": "IV",
+    "primary_concerns": [],
+    "confidence": 0.8,
+    "image": "indian_skin_5.jpg",
+    "elapsed_s": 5.46
+  },
+  {
+    "skin_type": "combination",
+    "acne_severity": "mild",
+    "fitzpatrick_estimate": "II",
+    "primary_concerns": [
+      "freckles",
+      "acne"
+    ],
+    "confidence": 0.8,
+    "image": "normal_skin_1.jpg",
+    "elapsed_s": 5.41
+  },
+  {
+    "skin_type": "normal",
+    "acne_severity": "none",
+    "fitzpatrick_estimate": "III",
+    "primary_concerns": [],
+    "confidence": 0.8,
+    "image": "normal_skin_2.jpg",
+    "elapsed_s": 5.35
+  },
+  {
+    "skin_type": "oily",
+    "acne_severity": "none",
+    "fitzpatrick_estimate": "VI",
+    "primary_concerns": [],
+    "confidence": 0.9,
+    "image": "oily_skin_1.jpg",
+    "elapsed_s": 5.57
+  },
+  {
+    "skin_type": "oily",
+    "acne_severity": "none",
+    "fitzpatrick_estimate": "VI",
+    "primary_concerns": [],
+    "confidence": 0.9,
+    "image": "oily_skin_2.jpg",
+    "elapsed_s": 5.55
+  },
+  {
+    "skin_type": "combination",
+    "acne_severity": "mild",
+    "fitzpatrick_estimate": "II",
+    "primary_concerns": [
+      "acne",
+      "freckles"
+    ],
+    "confidence": 0.8,
+    "image": "oily_skin_3.jpg",
+    "elapsed_s": 5.52
+  }
+]

@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+*.env
+hf_validation_results.json
+gemini_validation_results.json
+face_crop.jpg
+face_annotated.jpg
+test_images/
+.idea/
+backend/skindetector.db
+backend/migrations/versions/*.pyc
