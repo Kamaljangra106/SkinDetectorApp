@@ -7,13 +7,23 @@ No images are stored — bytes are analyzed and discarded immediately.
 
 import base64
 import json
-import os
+import logging
 from dataclasses import dataclass
 
 from groq import Groq
 
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+from config import GROQ_API_KEY
+
+logger = logging.getLogger(__name__)
+
 MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
+
+# Module-level singleton — reused across all requests (avoids per-request fd leak)
+_groq_client = Groq(api_key=GROQ_API_KEY)
+
+VALID_SKIN_TYPES = {"oily", "dry", "normal", "combination"}
+VALID_ACNE = {"none", "mild", "moderate", "severe"}
+VALID_FITZ = {"I", "II", "III", "IV", "V", "VI"}
 
 PROMPT = """Analyze this face photo for skin conditions. Respond with ONLY valid JSON, no markdown.
 
@@ -29,6 +39,12 @@ Fitzpatrick scale: I=very fair, II=fair, III=medium, IV=olive/light brown, V=bro
 Lower confidence if face is not clearly visible or image quality is poor."""
 
 
+def _coerce(val, valid_set: set, default: str) -> str:
+    """Coerce a model output value to a known enum, defaulting on mismatch."""
+    v = str(val).strip().lower() if val else default
+    return v if v in valid_set else default
+
+
 @dataclass
 class SkinAnalysis:
     skin_type: str
@@ -39,7 +55,7 @@ class SkinAnalysis:
 
     @property
     def is_darker_tone(self) -> bool:
-        """Fitzpatrick IV-VI — show accuracy disclaimer for redness results."""
+        """Fitzpatrick IV-VI — redness detection may be less accurate."""
         return self.fitzpatrick_estimate in ("IV", "V", "VI")
 
 
@@ -56,12 +72,11 @@ def analyze(image_bytes: bytes, mime_type: str = "image/jpeg") -> SkinAnalysis:
 
     Raises:
         ValueError: If the model returns unparseable output.
-        groq.APIError: On API failure.
+        groq.APIError: On API failure (caught upstream in main.py).
     """
-    client = Groq(api_key=GROQ_API_KEY)
     b64 = base64.b64encode(image_bytes).decode()
 
-    response = client.chat.completions.create(
+    response = _groq_client.chat.completions.create(
         model=MODEL,
         messages=[
             {
@@ -89,10 +104,18 @@ def analyze(image_bytes: bytes, mime_type: str = "image/jpeg") -> SkinAnalysis:
     except json.JSONDecodeError as e:
         raise ValueError(f"Model returned invalid JSON: {e}\nRaw: {raw[:300]}") from e
 
+    skin_type = _coerce(data.get("skin_type"), VALID_SKIN_TYPES, "normal")
+    acne_severity = _coerce(data.get("acne_severity"), VALID_ACNE, "none")
+
+    fitzpatrick = str(data.get("fitzpatrick_estimate", "III")).strip()
+    if fitzpatrick not in VALID_FITZ:
+        logger.warning("invalid_fitzpatrick_from_model", extra={"raw_value": fitzpatrick})
+        fitzpatrick = "III"  # safe default: medium tone, no disclaimer triggered
+
     return SkinAnalysis(
-        skin_type=data.get("skin_type", "unknown"),
-        acne_severity=data.get("acne_severity", "unknown"),
-        fitzpatrick_estimate=data.get("fitzpatrick_estimate", "unknown"),
+        skin_type=skin_type,
+        acne_severity=acne_severity,
+        fitzpatrick_estimate=fitzpatrick,
         primary_concerns=data.get("primary_concerns", []),
         confidence=float(data.get("confidence", 0.0)),
     )

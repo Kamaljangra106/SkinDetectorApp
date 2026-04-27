@@ -93,6 +93,35 @@ export default function History({ onBack }) {
                   </div>
                 )}
 
+                {item.ai_recommendations?.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <p className="text-zinc-500 text-xs uppercase tracking-wide">Personalised</p>
+                      <span className="text-violet-400 text-xs bg-violet-900/40 px-2 py-0.5 rounded-full">AI</span>
+                    </div>
+                    {item.ai_recommendations.map((r, i) => (
+                      <div key={i} className="flex flex-col">
+                        <span className="text-white text-xs font-medium">{r.name}</span>
+                        <span className="text-zinc-500 text-xs">{r.benefit}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {item.conflicts?.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <p className="text-orange-400 text-xs uppercase tracking-wide">Conflicts</p>
+                    {item.conflicts.map((c, i) => (
+                      <div key={i} className="flex flex-col">
+                        <span className="text-white text-xs font-medium">
+                          {c.ingredient_a.replace(/_/g, ' ')} + {c.ingredient_b.replace(/_/g, ' ')}
+                        </span>
+                        <span className="text-orange-300/70 text-xs">{c.timing_advice}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <p className="text-zinc-600 text-xs">
                   Confidence {Math.round(item.confidence * 100)}% · {item.elapsed_ms}ms
                 </p>

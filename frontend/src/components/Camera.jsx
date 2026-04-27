@@ -38,7 +38,7 @@ export default function Camera({ onLogout, onHistory }) {
     canvas.getContext('2d').drawImage(video, 0, 0)
 
     canvas.toBlob(async blob => {
-      if (!blob) return
+      if (!blob) { setError('Failed to capture frame. Try again.'); return; }
       setAnalyzing(true)
       setError('')
       try {
