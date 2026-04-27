@@ -3,10 +3,11 @@ import { isLoggedIn, logout } from './api'
 import AuthForm from './components/AuthForm'
 import Camera from './components/Camera'
 import History from './components/History'
+import Admin from './components/Admin'
 
 export default function App() {
   const [authed, setAuthed] = useState(isLoggedIn)
-  const [screen, setScreen] = useState('camera') // 'camera' | 'history'
+  const [screen, setScreen] = useState('camera') // 'camera' | 'history' | 'admin'
 
   function handleLogout() {
     logout()
@@ -22,5 +23,15 @@ export default function App() {
     return <History onBack={() => setScreen('camera')} />
   }
 
-  return <Camera onLogout={handleLogout} onHistory={() => setScreen('history')} />
+  if (screen === 'admin') {
+    return <Admin onBack={() => setScreen('camera')} />
+  }
+
+  return (
+    <Camera
+      onLogout={handleLogout}
+      onHistory={() => setScreen('history')}
+      onAdmin={() => setScreen('admin')}
+    />
+  )
 }

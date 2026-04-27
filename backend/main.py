@@ -98,6 +98,22 @@ def get_current_user_id(
         )
 
 
+def get_admin_user_id(
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+) -> int:
+    try:
+        payload = decode_token(credentials.credentials)
+        if not payload.get("is_admin"):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required.")
+        return int(payload["sub"])
+    except (JWTError, KeyError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
 # ---------------------------------------------------------------------------
 # Schemas
 # ---------------------------------------------------------------------------
@@ -170,6 +186,21 @@ class HistoryItem(BaseModel):
     created_at: str
 
 
+class AdminUserItem(BaseModel):
+    id: int
+    email: str
+    is_admin: bool
+    created_at: str
+    analysis_count: int
+
+
+class AdminStats(BaseModel):
+    total_users: int
+    total_analyses: int
+    avg_confidence: float
+    skin_type_breakdown: dict[str, int]
+
+
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
@@ -202,7 +233,7 @@ async def login(request: Request, body: LoginRequest, db: Session = Depends(get_
     user = db.query(models.User).filter(models.User.email == body.email).first()
     if not user or not verify_password(body.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid email or password.")
-    token = create_access_token(user_id=user.id, email=user.email)
+    token = create_access_token(user_id=user.id, email=user.email, is_admin=bool(user.is_admin))
     return TokenResponse(access_token=token)
 
 
@@ -361,3 +392,59 @@ async def get_history(
         )
         for r in records
     ]
+
+
+# ---------------------------------------------------------------------------
+# Admin routes
+# ---------------------------------------------------------------------------
+@app.get("/api/admin/users", response_model=list[AdminUserItem])
+async def admin_list_users(
+    _: int = Depends(get_admin_user_id),
+    db: Session = Depends(get_db),
+):
+    from sqlalchemy import func, select
+    stmt = (
+        select(
+            models.User,
+            func.count(models.Analysis.id).label("analysis_count"),
+        )
+        .outerjoin(models.Analysis, models.Analysis.user_id == models.User.id)
+        .group_by(models.User.id)
+        .order_by(models.User.created_at.desc())
+    )
+    rows = db.execute(stmt).all()
+    return [
+        AdminUserItem(
+            id=user.id,
+            email=user.email,
+            is_admin=bool(user.is_admin),
+            created_at=user.created_at.isoformat(),
+            analysis_count=count,
+        )
+        for user, count in rows
+    ]
+
+
+@app.get("/api/admin/stats", response_model=AdminStats)
+async def admin_stats(
+    _: int = Depends(get_admin_user_id),
+    db: Session = Depends(get_db),
+):
+    from sqlalchemy import func
+    total_users = db.query(func.count(models.User.id)).scalar() or 0
+    total_analyses = db.query(func.count(models.Analysis.id)).scalar() or 0
+    avg_confidence = db.query(func.avg(models.Analysis.confidence)).scalar() or 0.0
+
+    skin_rows = (
+        db.query(models.Analysis.skin_type, func.count(models.Analysis.id))
+        .group_by(models.Analysis.skin_type)
+        .all()
+    )
+    skin_type_breakdown = {skin_type: count for skin_type, count in skin_rows}
+
+    return AdminStats(
+        total_users=total_users,
+        total_analyses=total_analyses,
+        avg_confidence=round(float(avg_confidence), 3),
+        skin_type_breakdown=skin_type_breakdown,
+    )

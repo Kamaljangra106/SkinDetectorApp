@@ -1,8 +1,8 @@
 const SEVERITY_COLOR = {
-  none: 'text-green-400',
-  mild: 'text-yellow-400',
-  moderate: 'text-orange-400',
-  severe: 'text-red-400',
+  none: 'text-emerald-600',
+  mild: 'text-amber-600',
+  moderate: 'text-orange-600',
+  severe: 'text-red-600',
 }
 
 const FITZ_LABEL = {
@@ -18,17 +18,17 @@ export default function ResultCard({ result, onRetake }) {
   return (
     <div className="w-full max-w-sm mx-auto flex flex-col gap-4">
       {result.accuracy_disclaimer && (
-        <div className="bg-yellow-900/40 border border-yellow-700 rounded-xl px-4 py-3 text-yellow-300 text-sm">
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-amber-800 text-sm">
           Note: Redness detection may be less accurate for deeper skin tones (Fitzpatrick {result.fitzpatrick_estimate}).
         </div>
       )}
 
-      <div className="bg-zinc-900 rounded-2xl p-6 flex flex-col gap-4">
-        <Row label="Skin type" value={result.skin_type} className="capitalize" />
+      <div className="bg-white rounded-2xl p-6 flex flex-col gap-4 shadow-sm border border-slate-100">
+        <Row label="Skin type" value={result.skin_type} className="capitalize text-slate-900 font-medium" />
         <Row
           label="Acne severity"
           value={result.acne_severity}
-          className={`capitalize ${SEVERITY_COLOR[result.acne_severity] || 'text-white'}`}
+          className={`capitalize font-medium ${SEVERITY_COLOR[result.acne_severity] || 'text-slate-900'}`}
         />
         <Row
           label="Skin tone"
@@ -41,10 +41,10 @@ export default function ResultCard({ result, onRetake }) {
 
         {result.primary_concerns.length > 0 && (
           <div>
-            <p className="text-zinc-400 text-xs uppercase tracking-wide mb-2">Concerns</p>
+            <p className="text-slate-400 text-xs uppercase tracking-wide mb-2 font-medium">Concerns</p>
             <div className="flex flex-wrap gap-2">
               {result.primary_concerns.map(c => (
-                <span key={c} className="bg-zinc-800 text-zinc-200 text-xs px-3 py-1 rounded-full capitalize">
+                <span key={c} className="bg-slate-100 text-slate-700 text-xs px-3 py-1 rounded-full capitalize">
                   {c}
                 </span>
               ))}
@@ -52,48 +52,50 @@ export default function ResultCard({ result, onRetake }) {
           </div>
         )}
 
-        <p className="text-zinc-600 text-xs">Analyzed in {result.elapsed_ms}ms · Image not stored</p>
+        <p className="text-slate-400 text-xs border-t border-slate-100 pt-3 mt-1">
+          Analyzed in {result.elapsed_ms}ms · Image not stored
+        </p>
       </div>
 
       {result.recommendations?.length > 0 && (
-        <div className="bg-zinc-900 rounded-2xl p-6 flex flex-col gap-3">
-          <p className="text-zinc-400 text-xs uppercase tracking-wide">Recommended ingredients</p>
+        <div className="bg-white rounded-2xl p-6 flex flex-col gap-3 shadow-sm border border-slate-100">
+          <p className="text-slate-400 text-xs uppercase tracking-wide font-medium">Recommended ingredients</p>
           {result.recommendations.map(r => (
             <div key={r.key} className="flex flex-col gap-0.5">
-              <span className="text-white text-sm font-medium">{r.name}</span>
-              <span className="text-zinc-400 text-xs">{r.benefit}</span>
+              <span className="text-slate-900 text-sm font-medium">{r.name}</span>
+              <span className="text-slate-500 text-xs">{r.benefit}</span>
             </div>
           ))}
-          <p className="text-zinc-600 text-xs mt-1">Raw ingredients only · No brand recommendations</p>
+          <p className="text-slate-400 text-xs mt-1 border-t border-slate-100 pt-3">Raw ingredients only · No brand recommendations</p>
         </div>
       )}
 
       {result.ai_recommendations?.length > 0 && (
-        <div className="bg-zinc-900 rounded-2xl p-6 flex flex-col gap-3 border border-violet-800/40">
+        <div className="bg-white rounded-2xl p-6 flex flex-col gap-3 shadow-sm border border-blue-100">
           <div className="flex items-center justify-between">
-            <p className="text-zinc-400 text-xs uppercase tracking-wide">Personalised for you</p>
-            <span className="text-violet-400 text-xs bg-violet-900/40 px-2 py-0.5 rounded-full">AI</span>
+            <p className="text-slate-400 text-xs uppercase tracking-wide font-medium">Personalised for you</p>
+            <span className="text-blue-600 text-xs bg-blue-50 px-2 py-0.5 rounded-full font-medium">AI</span>
           </div>
           {result.ai_recommendations.map((r, i) => (
             <div key={i} className="flex flex-col gap-0.5">
-              <span className="text-white text-sm font-medium">{r.name}</span>
-              <span className="text-zinc-400 text-xs">{r.benefit}</span>
+              <span className="text-slate-900 text-sm font-medium">{r.name}</span>
+              <span className="text-slate-500 text-xs">{r.benefit}</span>
             </div>
           ))}
-          <p className="text-zinc-600 text-xs mt-1">Generated by AI · Always consult a dermatologist</p>
+          <p className="text-slate-400 text-xs mt-1 border-t border-slate-100 pt-3">Generated by AI · Always consult a dermatologist</p>
         </div>
       )}
 
       {result.conflicts?.length > 0 && (
-        <div className="bg-zinc-900 rounded-2xl p-6 flex flex-col gap-3 border border-orange-800/40">
-          <p className="text-orange-400 text-xs uppercase tracking-wide">Ingredient conflicts</p>
+        <div className="bg-white rounded-2xl p-6 flex flex-col gap-3 shadow-sm border border-amber-100">
+          <p className="text-amber-600 text-xs uppercase tracking-wide font-medium">Ingredient conflicts</p>
           {result.conflicts.map((c, i) => (
             <div key={i} className="flex flex-col gap-1">
-              <span className="text-white text-sm font-medium">
+              <span className="text-slate-900 text-sm font-medium">
                 {c.ingredient_a.replace(/_/g, ' ')} + {c.ingredient_b.replace(/_/g, ' ')}
               </span>
-              <span className="text-zinc-400 text-xs">{c.reason}</span>
-              <span className="text-orange-300/70 text-xs">{c.timing_advice}</span>
+              <span className="text-slate-500 text-xs">{c.reason}</span>
+              <span className="text-amber-700 text-xs">{c.timing_advice}</span>
             </div>
           ))}
         </div>
@@ -101,7 +103,7 @@ export default function ResultCard({ result, onRetake }) {
 
       <button
         onClick={onRetake}
-        className="bg-violet-600 hover:bg-violet-500 text-white font-medium rounded-lg py-3 text-sm transition-colors"
+        className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg py-3 text-sm transition-colors"
       >
         Analyze again
       </button>
@@ -109,11 +111,11 @@ export default function ResultCard({ result, onRetake }) {
   )
 }
 
-function Row({ label, value, className = 'text-white capitalize' }) {
+function Row({ label, value, className = 'text-slate-900 font-medium capitalize' }) {
   return (
     <div className="flex justify-between items-center">
-      <span className="text-zinc-400 text-sm">{label}</span>
-      <span className={`text-sm font-medium ${className}`}>{value}</span>
+      <span className="text-slate-500 text-sm">{label}</span>
+      <span className={`text-sm ${className}`}>{value}</span>
     </div>
   )
 }

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { analyzeImage } from '../api'
+import { analyzeImage, isAdmin } from '../api'
 import ResultCard from './ResultCard'
 
-export default function Camera({ onLogout, onHistory }) {
+export default function Camera({ onLogout, onHistory, onAdmin }) {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const [ready, setReady] = useState(false)
@@ -58,15 +58,20 @@ export default function Camera({ onLogout, onHistory }) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start px-4 py-6 gap-6">
+    <div className="min-h-screen flex flex-col items-center justify-start px-4 py-6 gap-6 bg-slate-50">
       {/* Header */}
       <div className="w-full max-w-sm flex justify-between items-center">
-        <h1 className="text-lg font-semibold text-white">SkinDetector</h1>
-        <div className="flex gap-4">
-          <button onClick={onHistory} className="text-zinc-400 hover:text-white text-sm transition-colors">
+        <h1 className="text-lg font-semibold text-slate-900">SkinDetector</h1>
+        <div className="flex gap-4 items-center">
+          <button onClick={onHistory} className="text-slate-500 hover:text-slate-800 text-sm transition-colors">
             History
           </button>
-          <button onClick={onLogout} className="text-zinc-500 hover:text-zinc-300 text-sm transition-colors">
+          {isAdmin() && (
+            <button onClick={onAdmin} className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors">
+              Admin
+            </button>
+          )}
+          <button onClick={onLogout} className="text-slate-400 hover:text-slate-600 text-sm transition-colors">
             Sign out
           </button>
         </div>
@@ -74,8 +79,8 @@ export default function Camera({ onLogout, onHistory }) {
 
       {!result ? (
         <>
-          {/* Camera feed */}
-          <div className="relative w-full max-w-sm aspect-[3/4] bg-zinc-900 rounded-2xl overflow-hidden">
+          {/* Camera feed — stays dark for contrast */}
+          <div className="relative w-full max-w-sm aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden shadow-sm">
             {error ? (
               <div className="absolute inset-0 flex items-center justify-center px-6 text-center text-red-400 text-sm">
                 {error}
@@ -91,7 +96,7 @@ export default function Camera({ onLogout, onHistory }) {
                 />
                 {/* Face guide overlay */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-48 h-60 rounded-full border-2 border-violet-400/60 border-dashed" />
+                  <div className="w-48 h-60 rounded-full border-2 border-blue-400/60 border-dashed" />
                 </div>
                 {analyzing && (
                   <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
@@ -102,12 +107,12 @@ export default function Camera({ onLogout, onHistory }) {
             )}
           </div>
 
-          <p className="text-zinc-500 text-sm">Position your face in the oval, then tap Analyze</p>
+          <p className="text-slate-400 text-sm">Position your face in the oval, then tap Analyze</p>
 
           <button
             onClick={capture}
             disabled={!ready || analyzing}
-            className="w-full max-w-sm bg-violet-600 hover:bg-violet-500 disabled:opacity-40 text-white font-medium rounded-lg py-3 text-sm transition-colors"
+            className="w-full max-w-sm bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-medium rounded-lg py-3 text-sm transition-colors"
           >
             {analyzing ? 'Analyzing…' : 'Analyze skin'}
           </button>

@@ -7,8 +7,9 @@
 }
 
 body {
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
-  background: #0f0f0f;
-  color: #f3f4f6;
+  font-family: 'Inter', system-ui, 'Segoe UI', sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
