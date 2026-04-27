@@ -11,3 +11,5 @@ test_images/
 .idea/
 backend/skindetector.db
 backend/migrations/versions/*.pyc
+node_modules/
+dist/
