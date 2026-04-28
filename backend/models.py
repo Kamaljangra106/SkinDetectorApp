@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from db import Base
@@ -12,10 +12,21 @@ class User(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
     )
+
+
+class ConflictPair(Base):
+    __tablename__ = "conflict_pairs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    ingredient_a: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    ingredient_b: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    reason: Mapped[str] = mapped_column(Text, nullable=False)
+    timing_advice: Mapped[str] = mapped_column(Text, nullable=False)
 
 
 class Analysis(Base):
@@ -28,6 +39,8 @@ class Analysis(Base):
     fitzpatrick_estimate: Mapped[str] = mapped_column(String(10), nullable=False)
     primary_concerns: Mapped[str] = mapped_column(Text, nullable=False, default="[]")   # JSON array
     recommendations: Mapped[str] = mapped_column(Text, nullable=False, default="[]")    # JSON array
+    ai_recommendations: Mapped[str] = mapped_column(Text, nullable=False, server_default="[]", default="[]")  # JSON array
+    conflicts: Mapped[str] = mapped_column(Text, nullable=False, server_default="[]", default="[]")          # JSON array
     confidence: Mapped[float] = mapped_column(Float, nullable=False)
     accuracy_disclaimer: Mapped[bool] = mapped_column(Integer, nullable=False, default=0)
     elapsed_ms: Mapped[int] = mapped_column(Integer, nullable=False)

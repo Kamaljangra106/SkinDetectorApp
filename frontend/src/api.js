@@ -41,6 +41,17 @@ export function isLoggedIn() {
   return !!localStorage.getItem('token')
 }
 
+export function isAdmin() {
+  const token = localStorage.getItem('token')
+  if (!token) return false
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return payload.is_admin === true
+  } catch {
+    return false
+  }
+}
+
 export async function analyzeImage(blob) {
   const form = new FormData()
   form.append('file', blob, 'capture.jpg')
