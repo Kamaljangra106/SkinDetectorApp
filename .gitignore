@@ -1,15 +1,50 @@
+# Python
 .venv/
+venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+
+# Environment / secrets
 .env
 *.env
+!.env.example
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Test / validation artefacts
 hf_validation_results.json
 gemini_validation_results.json
+groq_validation_results.json
 face_crop.jpg
 face_annotated.jpg
 test_images/
+test_face_detect.py
+test_gemini.py
+test_gpt4v.py
+test_hf_models.py
+
+# Editor / OS
 .idea/
-backend/skindetector.db
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Alembic compiled
 backend/migrations/versions/*.pyc
+
+# Node
 node_modules/
 dist/
+
+# gstack
+.gstack/
+
+# Logs
+*.log
+npm-debug.log*
