@@ -1,146 +1,190 @@
-const SEVERITY_COLOR = {
-  none: 'text-emerald-700 bg-emerald-50 border-emerald-200',
-  mild: 'text-amber-700 bg-amber-50 border-amber-200',
-  moderate: 'text-orange-700 bg-orange-50 border-orange-200',
-  severe: 'text-red-700 bg-red-50 border-red-200',
+const SEVERITY_COLORS = {
+  none: { text: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+  mild: { text: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-200' },
+  moderate: { text: 'text-orange-700', bg: 'bg-orange-50', border: 'border-orange-200' },
+  severe: { text: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200' },
 }
 
-const FITZ_LABEL = {
-  I: 'Very fair',
-  II: 'Fair',
-  III: 'Medium',
-  IV: 'Olive / light brown',
-  V: 'Brown',
-  VI: 'Dark brown / black',
-}
+export default function ResultCard({ result, onAnalyzeAgain }) {
+  const severityStyle = SEVERITY_COLORS[result.acne_severity] || SEVERITY_COLORS.none
 
-export default function ResultCard({ result, onRetake }) {
   return (
-    <div className="w-full max-w-sm mx-auto flex flex-col gap-4">
-      {result.accuracy_disclaimer && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl px-4 py-3 flex gap-2">
-          <span className="text-amber-500 mt-0.5 shrink-0">⚠️</span>
-          <p className="text-amber-800 text-sm">Redness detection may be less accurate for deeper skin tones (Fitzpatrick {result.fitzpatrick_estimate}).</p>
+    <div className="max-w-6xl mx-auto p-6 lg:p-8 w-full">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/30">
+          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
         </div>
-      )}
+        <h1 className="text-2xl font-bold text-slate-800 mb-2">Analysis Complete</h1>
+        <p className="text-slate-500">Here are your personalized skin analysis results</p>
+      </div>
 
-      {/* Main result card */}
-      <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-        <div className="bg-blue-600 px-5 py-4">
-          <p className="text-blue-100 text-xs font-medium uppercase tracking-wide">Analysis Complete</p>
-          <p className="text-white text-lg font-semibold capitalize mt-0.5">{result.skin_type} skin</p>
-        </div>
-        <div className="p-5 flex flex-col gap-3">
-          <Row label="Acne severity">
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border capitalize ${SEVERITY_COLOR[result.acne_severity] || 'text-slate-700 bg-slate-100 border-slate-200'}`}>
-              {result.acne_severity}
-            </span>
-          </Row>
-          <Row label="Skin tone">
-            <span className="text-slate-800 text-sm font-medium">
-              Type {result.fitzpatrick_estimate} — {FITZ_LABEL[result.fitzpatrick_estimate] || ''}
-            </span>
-          </Row>
-          <Row label="Confidence">
-            <div className="flex items-center gap-2">
-              <div className="w-20 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.round(result.confidence * 100)}%` }} />
-              </div>
-              <span className="text-slate-700 text-sm font-semibold">{Math.round(result.confidence * 100)}%</span>
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Left Column */}
+        <div className="lg:col-span-1 flex flex-col gap-4">
+          {/* Skin Type Card */}
+          <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 overflow-hidden">
+            <div className="bg-gradient-to-r from-teal-500 to-cyan-500 px-6 py-6">
+              <p className="text-xs font-semibold text-teal-100 uppercase tracking-wider mb-1">Your Skin Type</p>
+              <h2 className="text-3xl font-bold text-white">{result.skin_type}</h2>
             </div>
-          </Row>
 
-          {result.primary_concerns.length > 0 && (
-            <div className="pt-1 border-t border-slate-100">
-              <p className="text-slate-400 text-xs font-semibold uppercase tracking-wide mb-2">Concerns</p>
-              <div className="flex flex-wrap gap-1.5">
-                {result.primary_concerns.map(c => (
-                  <span key={c} className="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-full capitalize border border-slate-200">
-                    {c}
+            <div className="p-6 space-y-5">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-500">Acne Severity</span>
+                <span className={`px-3 py-1.5 text-sm font-semibold rounded-full border ${severityStyle.text} ${severityStyle.bg} ${severityStyle.border}`}>
+                  {result.acne_severity.charAt(0).toUpperCase() + result.acne_severity.slice(1)}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-500">Skin Tone</span>
+                <span className="text-sm font-semibold text-slate-800">{result.fitzpatrick_type}</span>
+              </div>
+
+              {result.fitzpatrick_label && result.fitzpatrick_label !== result.fitzpatrick_type && (
+                <p className="text-xs text-slate-400 text-right">{result.fitzpatrick_label}</p>
+              )}
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-slate-500">Confidence</span>
+                  <span className="text-sm font-bold text-teal-600">{Math.round(result.confidence * 100)}%</span>
+                </div>
+                <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full transition-all duration-500"
+                    style={{ width: `${result.confidence * 100}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Concerns */}
+          {result.concerns && result.concerns.length > 0 && (
+            <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 p-6">
+              <h3 className="text-sm font-semibold text-slate-800 mb-4">Detected Concerns</h3>
+              <div className="flex flex-wrap gap-2">
+                {result.concerns.map((concern) => (
+                  <span key={concern} className="px-3 py-1.5 text-sm font-medium text-slate-600 bg-slate-100 rounded-full">
+                    {concern}
                   </span>
                 ))}
               </div>
             </div>
           )}
 
-          <p className="text-slate-400 text-xs border-t border-slate-100 pt-3">
-            Analyzed in {result.elapsed_ms}ms · Image not stored
-          </p>
+          <button
+            onClick={onAnalyzeAgain}
+            className="w-full py-4 px-6 bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-semibold rounded-xl hover:from-teal-600 hover:to-cyan-600 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-all shadow-lg shadow-teal-500/25 hover:shadow-xl hover:shadow-teal-500/30"
+          >
+            <span className="flex items-center justify-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Analyze Again
+            </span>
+          </button>
+
+          <p className="text-xs text-center text-slate-400">Analyzed in {result.analysis_time_ms}ms</p>
+        </div>
+
+        {/* Right Column */}
+        <div className="lg:col-span-2 flex flex-col gap-4">
+          {/* Recommended Ingredients */}
+          <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 overflow-hidden">
+            <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center">
+                <svg className="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-slate-800">Recommended Ingredients</h3>
+            </div>
+            <div className="p-6">
+              <div className="grid gap-4 sm:grid-cols-2">
+                {(result.ingredients || []).map((item, idx) => (
+                  <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-teal-200 hover:bg-teal-50/50 transition-colors">
+                    <span className="font-semibold text-slate-800">{item.name}</span>
+                    <p className="text-sm text-slate-500 mt-1">{item.benefit}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* AI Recommendations */}
+          {result.ai_recommendations && result.ai_recommendations.length > 0 && (
+            <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-teal-100 overflow-hidden">
+              <div className="px-6 py-4 bg-gradient-to-r from-teal-50 to-cyan-50 border-b border-teal-100 flex items-center gap-3">
+                <div className="px-2 py-1 text-xs font-bold bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-md">AI</div>
+                <h3 className="font-semibold text-slate-800">Personalized Recommendations</h3>
+              </div>
+              <div className="p-6">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {result.ai_recommendations.map((item, idx) => (
+                    <div key={idx} className="p-4 rounded-xl bg-gradient-to-br from-teal-50/50 to-cyan-50/50 border border-teal-100">
+                      <span className="font-semibold text-slate-800">{item.name}</span>
+                      <p className="text-sm text-slate-500 mt-1">{item.benefit}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Ingredient Conflicts */}
+          <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-amber-100 overflow-hidden">
+            <div className="px-6 py-4 bg-amber-50 border-b border-amber-100 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-slate-800">Ingredient Conflicts</h3>
+            </div>
+            <div className="p-6">
+              {(!result.conflicts || result.conflicts.length === 0) ? (
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-100">
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium text-emerald-800">No conflicts detected</p>
+                    <p className="text-sm text-emerald-600">All recommended ingredients are safe to use together</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {result.conflicts.map((conflict, idx) => (
+                    <div key={idx} className="p-4 rounded-xl bg-amber-50/50 border border-amber-100">
+                      <p className="font-semibold text-slate-800">{conflict.pair[0]} + {conflict.pair[1]}</p>
+                      <p className="text-sm text-slate-600 mt-1">{conflict.reason}</p>
+                      <div className="flex items-center gap-2 mt-3 text-sm text-amber-700">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="font-medium">{conflict.timing_advice}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Recommended ingredients */}
-      {result.recommendations?.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50">
-            <p className="text-slate-700 text-xs font-semibold uppercase tracking-wide">Recommended Ingredients</p>
-          </div>
-          <div className="p-5 flex flex-col gap-3.5">
-            {result.recommendations.map(r => (
-              <div key={r.key} className="flex flex-col gap-0.5">
-                <span className="text-slate-900 text-sm font-semibold">{r.name}</span>
-                <span className="text-slate-500 text-xs leading-relaxed">{r.benefit}</span>
-              </div>
-            ))}
-            <p className="text-slate-400 text-xs pt-2 border-t border-slate-100">Raw ingredients only · No brand recommendations</p>
-          </div>
-        </div>
-      )}
-
-      {/* AI recommendations */}
-      {result.ai_recommendations?.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-md border border-blue-200 overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-blue-100 bg-blue-50 flex items-center justify-between">
-            <p className="text-blue-800 text-xs font-semibold uppercase tracking-wide">Personalised for you</p>
-            <span className="text-blue-600 text-xs bg-white border border-blue-200 px-2 py-0.5 rounded-full font-semibold">AI</span>
-          </div>
-          <div className="p-5 flex flex-col gap-3.5">
-            {result.ai_recommendations.map((r, i) => (
-              <div key={i} className="flex flex-col gap-0.5">
-                <span className="text-slate-900 text-sm font-semibold">{r.name}</span>
-                <span className="text-slate-500 text-xs leading-relaxed">{r.benefit}</span>
-              </div>
-            ))}
-            <p className="text-slate-400 text-xs pt-2 border-t border-slate-100">Generated by AI · Always consult a dermatologist</p>
-          </div>
-        </div>
-      )}
-
-      {/* Conflicts */}
-      {result.conflicts?.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-md border border-amber-200 overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-amber-100 bg-amber-50">
-            <p className="text-amber-700 text-xs font-semibold uppercase tracking-wide">Ingredient Conflicts</p>
-          </div>
-          <div className="p-5 flex flex-col gap-4">
-            {result.conflicts.map((c, i) => (
-              <div key={i} className="flex flex-col gap-1">
-                <span className="text-slate-900 text-sm font-semibold">
-                  {c.ingredient_a.replace(/_/g, ' ')} + {c.ingredient_b.replace(/_/g, ' ')}
-                </span>
-                <span className="text-slate-500 text-xs leading-relaxed">{c.reason}</span>
-                <span className="text-amber-700 text-xs font-medium">{c.timing_advice}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <button
-        onClick={onRetake}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl py-3.5 text-sm transition-colors shadow-md"
-      >
-        Analyze again
-      </button>
-    </div>
-  )
-}
-
-function Row({ label, children }) {
-  return (
-    <div className="flex justify-between items-center gap-4">
-      <span className="text-slate-500 text-sm shrink-0">{label}</span>
-      {children}
     </div>
   )
 }
