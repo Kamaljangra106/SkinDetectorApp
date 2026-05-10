@@ -19,7 +19,7 @@ function normalizeAnalysis(data) {
   }
 }
 
-export default function Camera({ token, onAnalysisComplete }) {
+export default function Camera({ token, onAnalysisComplete, onSessionExpired }) {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const [cameraReady, setCameraReady] = useState(false)
@@ -71,7 +71,11 @@ export default function Camera({ token, onAnalysisComplete }) {
         const raw = await analyzeImage(blob)
         onAnalysisComplete(normalizeAnalysis(raw))
       } catch (err) {
-        setCameraError(err.message || 'Analysis failed. Please try again.')
+        if (err.message?.includes('Session expired') && onSessionExpired) {
+          onSessionExpired()
+        } else {
+          setCameraError(err.message || 'Analysis failed. Please try again.')
+        }
       } finally {
         setIsAnalyzing(false)
       }
@@ -84,7 +88,7 @@ export default function Camera({ token, onAnalysisComplete }) {
       <div className="flex-1 flex flex-col">
         <div
           className="relative bg-slate-900 rounded-2xl overflow-hidden shadow-2xl shadow-slate-900/20 ring-1 ring-slate-200/50"
-          style={{ aspectRatio: '3/4', maxHeight: '75vh' }}
+          style={{ width: 'min(100%, calc(75vh * 0.75))', aspectRatio: '3/4', margin: '0 auto' }}
         >
           {cameraError ? (
             <div className="absolute inset-0 flex items-center justify-center p-8 bg-gradient-to-br from-slate-800 to-slate-900">

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { login, register } from '../api'
 
-export default function AuthForm({ onSuccess }) {
+export default function AuthForm({ onSuccess, onHomeClick }) {
   const [isLogin, setIsLogin] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -66,7 +66,18 @@ export default function AuthForm({ onSuccess }) {
           </div>
         </div>
 
-        <div className="absolute bottom-8 left-16 right-16">
+        <div className="absolute bottom-8 left-16 right-16 flex items-center justify-between">
+          {onHomeClick && (
+            <button
+              onClick={onHomeClick}
+              className="flex items-center gap-2 text-white/70 hover:text-white text-sm transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Home
+            </button>
+          )}
           <div className="flex items-center gap-3 text-white/60 text-sm">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -80,6 +91,19 @@ export default function AuthForm({ onSuccess }) {
       {/* Right Panel */}
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
+          {/* Mobile back link */}
+          {onHomeClick && (
+            <button
+              onClick={onHomeClick}
+              className="lg:hidden flex items-center gap-1.5 text-sm text-slate-500 hover:text-teal-600 transition-colors mb-6 self-start"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Home
+            </button>
+          )}
+
           {/* Mobile logo */}
           <div className="lg:hidden flex flex-col items-center mb-10">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center mb-4 shadow-lg shadow-teal-500/30">
@@ -99,7 +123,7 @@ export default function AuthForm({ onSuccess }) {
               {isLogin ? 'Enter your credentials to access your dashboard' : 'Start your skin health journey today'}
             </p>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
               {error && (
                 <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm flex items-start gap-3">
                   <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,6 +144,7 @@ export default function AuthForm({ onSuccess }) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  autoComplete="email"
                   className="w-full px-4 py-3 border border-slate-300 rounded-xl text-slate-800 placeholder-slate-400 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
                   placeholder="you@example.com"
                 />
@@ -135,6 +160,7 @@ export default function AuthForm({ onSuccess }) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  autoComplete={isLogin ? 'current-password' : 'new-password'}
                   className="w-full px-4 py-3 border border-slate-300 rounded-xl text-slate-800 placeholder-slate-400 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
                   placeholder="Enter your password"
                 />

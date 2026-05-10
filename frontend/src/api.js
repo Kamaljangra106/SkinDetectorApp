@@ -38,7 +38,18 @@ export function logout() {
 }
 
 export function isLoggedIn() {
-  return !!localStorage.getItem('token')
+  const token = localStorage.getItem('token')
+  if (!token) return false
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+      localStorage.removeItem('token')
+      return false
+    }
+    return true
+  } catch {
+    return false
+  }
 }
 
 export function isAdmin() {

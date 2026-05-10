@@ -1,13 +1,13 @@
 # SkinDetectorApp
 
-AI-powered skin analysis web app. Upload or capture a face photo to get your skin type, acne severity, Fitzpatrick tone, recommended skincare ingredients, ingredient conflict warnings, and personalized AI recommendations — all in real time via the Groq API.
+AI-powered skin analysis web app. Capture or upload a face photo to get your skin type, acne severity, Fitzpatrick tone, recommended skincare ingredients, ingredient conflict warnings, and personalized AI recommendations — all in real time via the Groq API.
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
 | Backend | FastAPI + SQLAlchemy + SQLite, Alembic migrations, JWT auth |
-| AI | Groq API — Llama 4 Scout (vision) for analysis, Llama 3 for recommendations |
+| AI | Groq API — Llama 4 Scout (vision + text) for analysis and recommendations |
 | Frontend | React 19 + Vite 8 + Tailwind CSS v4 |
 | Auth | JWT (HS256), bcrypt passwords, rate limiting via SlowAPI |
 
@@ -17,10 +17,14 @@ AI-powered skin analysis web app. Upload or capture a face photo to get your ski
 
 Before you start, make sure you have:
 
-- **Python 3.11+** — `python --version`
-- **Node.js 18+** — `node --version`
+- **Python 3.12** — `python --version` (`.python-version` file included for pyenv users)
+- **Node.js 18+** — `node --version` (`.nvmrc` file included for nvm users — `nvm use` auto-selects Node 20)
 - **npm 9+** — `npm --version`
 - **A free Groq API key** — sign up at [console.groq.com](https://console.groq.com), no credit card required
+
+> **Version management shortcuts:**
+> - pyenv users: `pyenv install 3.12 && pyenv local 3.12`
+> - nvm users: `nvm install && nvm use` (reads `.nvmrc` automatically)
 
 ---
 
@@ -45,7 +49,7 @@ source .venv/bin/activate
 # Windows (PowerShell)
 .venv\Scripts\Activate.ps1
 
-# Install all Python dependencies
+# Install all Python dependencies (exact versions pinned)
 pip install -r backend/requirements.txt
 ```
 
@@ -83,7 +87,7 @@ alembic upgrade head
 cd ..
 ```
 
-This creates `backend/skindetector.db` with all required tables (users, analyses, conflict_pairs).
+This creates `backend/skindetector.db` with all required tables (users, analyses, conflict_pairs, contact_queries).
 
 ### 5. Start the backend
 
@@ -108,7 +112,7 @@ npm run dev
 
 The app opens at `http://localhost:5173`.
 
-> **WSL2 note:** If you're on Windows Subsystem for Linux, run `npm install` from inside WSL — not from Windows Explorer or a Windows terminal. Installing node_modules on Windows and running them on Linux causes native binding errors.
+> **WSL2 note:** If you're on Windows Subsystem for Linux, run both `npm install` and `npm run dev` from inside WSL — not from Windows Explorer or a Windows terminal. Installing node_modules on Windows and running them on Linux causes native binding errors.
 
 ---
 
@@ -129,33 +133,36 @@ The app opens at `http://localhost:5173`.
 SkinDetectorApp/
 ├── backend/
 │   ├── main.py              # FastAPI app, all API endpoints
-│   ├── models.py            # SQLAlchemy ORM models (User, Analysis, ConflictPair)
+│   ├── models.py            # SQLAlchemy ORM models (User, Analysis, ConflictPair, ContactQuery)
 │   ├── auth.py              # JWT create/verify, bcrypt hashing
 │   ├── config.py            # Env var loading (SECRET_KEY, GROQ_API_KEY, etc.)
 │   ├── db.py                # SQLAlchemy engine + session factory
-│   ├── requirements.txt     # Python dependencies
+│   ├── requirements.txt     # Python dependencies (exact versions pinned)
 │   ├── migrations/          # Alembic migration scripts
 │   │   └── versions/        # Individual migration files
 │   ├── ml/
 │   │   ├── analyzer.py      # Groq vision call → SkinAnalysis dataclass
 │   │   └── recommendations.py  # Ingredient recommendations + conflict detection + AI recs
 │   └── tests/
-│       └── test_api.py      # 18 integration tests (pytest + in-memory SQLite)
+│       └── test_api.py      # Integration tests (pytest + in-memory SQLite)
 ├── frontend/
 │   ├── src/
 │   │   ├── App.jsx          # Root component, screen-based routing
-│   │   ├── api.js           # fetch wrappers, JWT helpers, isAdmin()
+│   │   ├── api.js           # fetch wrappers, JWT helpers, expiry check
 │   │   ├── index.css        # Tailwind v4 imports + CSS custom properties
 │   │   └── components/
-│   │       ├── AuthForm.jsx # Login / Register form
-│   │       ├── NavBar.jsx   # Top navigation
-│   │       ├── Camera.jsx   # Webcam capture + file upload + analysis trigger
-│   │       ├── ResultCard.jsx  # Analysis results display
-│   │       ├── History.jsx  # Accordion list of past analyses
-│   │       └── Admin.jsx    # Admin dashboard (stats + user table)
+│   │       ├── LandingPage.jsx  # Public homepage (Hero, How It Works, Features, About, Contact)
+│   │       ├── AuthForm.jsx     # Login / Register form
+│   │       ├── NavBar.jsx       # Animated top navigation (collapses when logged out)
+│   │       ├── Camera.jsx       # Webcam capture + file upload + analysis trigger
+│   │       ├── ResultCard.jsx   # Analysis results display
+│   │       ├── History.jsx      # Accordion list of past analyses
+│   │       └── Admin.jsx        # Admin dashboard (stats, users, contact queries)
 │   ├── index.html
 │   ├── vite.config.js       # Vite config + `/api` proxy to backend:8000
 │   └── package.json
+├── .python-version          # Python 3.12 (read by pyenv)
+├── .nvmrc                   # Node 20 LTS (read by nvm)
 ├── .env.example             # Template for environment variables (safe to commit)
 ├── .gitignore
 └── README.md
@@ -172,8 +179,10 @@ SkinDetectorApp/
 | POST | `/api/auth/login` | — | Get JWT `{email, password}` → `{access_token}` |
 | POST | `/api/analyze` | JWT | Analyze face image (multipart/form-data `file`) |
 | GET | `/api/history` | JWT | Paginated past analyses `?limit=20&offset=0` |
+| POST | `/api/contact` | — | Submit a contact query `{name, email, subject, message}` |
 | GET | `/api/admin/stats` | JWT (admin) | Aggregate stats |
 | GET | `/api/admin/users` | JWT (admin) | All registered users |
+| GET | `/api/admin/contact` | JWT (admin) | All submitted contact queries |
 
 Rate limits: login `5/minute`, analyze `10/minute` per IP.
 
@@ -181,7 +190,7 @@ Rate limits: login `5/minute`, analyze `10/minute` per IP.
 
 ## Making Yourself an Admin
 
-By default all registered users are regular users. To grant admin access, open the SQLite database:
+By default all registered users are regular users. To grant admin access:
 
 ```bash
 cd backend
@@ -229,7 +238,6 @@ Serve `dist/` from any static host (Vercel, Netlify, Cloudflare Pages). Set the 
 For production, use a proper WSGI/ASGI host:
 
 ```bash
-# Example with gunicorn + uvicorn workers
 pip install gunicorn
 gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
 ```
@@ -243,17 +251,30 @@ Switch `DATABASE_URL` to PostgreSQL and set a strong `SECRET_KEY`.
 **`ModuleNotFoundError` on backend start**
 Make sure your virtual environment is activated (`source .venv/bin/activate`) and you ran `pip install -r backend/requirements.txt`.
 
+**`bcrypt` or `cryptography` fails to install**
+These packages require build tools. First upgrade pip: `pip install --upgrade pip setuptools wheel`. If it still fails, install Rust (required by `cryptography`):
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
+```
+
 **`GROQ_API_KEY not set` / 401 errors from Groq**
 Check that `backend/.env` contains your key and that it starts with `gsk_`. The `.env` file must be inside the `backend/` directory (same folder as `main.py`).
 
 **Alembic `Target database is not up to date`**
 Run `alembic upgrade head` from the `backend/` directory.
 
+**`sqlite3.OperationalError: no such column` or `no such table`**
+A new migration was added since you last ran. Run `alembic upgrade head` from `backend/`.
+
 **Frontend shows blank / Tailwind not working**
 If you installed `node_modules` on Windows and run on WSL2, delete `node_modules/` and run `npm install` again inside WSL.
 
-**Camera not working**
-Browsers require HTTPS or `localhost` for webcam access. The Vite dev server on `localhost:5173` works fine. For remote devices on your network, you may need to add a self-signed cert or use `ngrok`.
+**Node version error during `npm install`**
+Vite 8 requires Node 18+. Run `node --version` to check. Use nvm to switch: `nvm install 20 && nvm use 20`.
 
-**`sqlite3.OperationalError: no such column`**
-A new migration was added since you last ran. Run `alembic upgrade head` from `backend/`.
+**Camera not working**
+Browsers require HTTPS or `localhost` for webcam access. The Vite dev server on `localhost:5173` works fine. For remote devices on your network, you may need a self-signed cert or `ngrok`.
+
+**Logged in but getting 401 on analyze**
+Your JWT has expired (tokens last 24 hours). Log out and log back in. The app will now detect expired tokens automatically on the client side and redirect to the login page.

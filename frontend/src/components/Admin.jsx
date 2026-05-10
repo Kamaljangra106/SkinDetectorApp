@@ -4,19 +4,20 @@ import { authHeaders } from '../api'
 export default function Admin({ token }) {
   const [stats, setStats] = useState(null)
   const [users, setUsers] = useState([])
+  const [queries, setQueries] = useState([])
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('overview') // 'overview' | 'queries'
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statsRes, usersRes] = await Promise.all([
+        const [statsRes, usersRes, queriesRes] = await Promise.all([
           fetch('/api/admin/stats', { headers: authHeaders() }),
           fetch('/api/admin/users', { headers: authHeaders() }),
+          fetch('/api/admin/contact', { headers: authHeaders() }),
         ])
         if (statsRes.ok) {
           const raw = await statsRes.json()
-          // Backend returns skin_type_breakdown as object {combination: 5, normal: 3}
-          // Convert to array [{type, count}] and derive top_skin_type
           const breakdown = raw.skin_type_breakdown || {}
           const breakdownArray = Object.entries(breakdown).map(([type, count]) => ({ type, count }))
           const topEntry = breakdownArray.reduce((a, b) => (b.count > a.count ? b : a), { type: 'N/A', count: 0 })
@@ -26,9 +27,8 @@ export default function Admin({ token }) {
             top_skin_type: raw.top_skin_type || (topEntry.count > 0 ? topEntry.type : 'N/A'),
           })
         }
-        if (usersRes.ok) {
-          setUsers(await usersRes.json())
-        }
+        if (usersRes.ok) setUsers(await usersRes.json())
+        if (queriesRes.ok) setQueries(await queriesRes.json())
       } catch {
         console.error('Failed to fetch admin data')
       } finally {
@@ -106,15 +106,31 @@ export default function Admin({ token }) {
     <div className="min-h-[calc(100vh-4rem)]">
       {/* Page Header */}
       <div className="bg-gradient-to-r from-teal-500 to-cyan-500 px-6 py-12">
-        <div className="max-w-7xl mx-auto flex items-center gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
-              <span className="px-2.5 py-1 text-xs font-semibold bg-white/20 text-white rounded-full backdrop-blur-sm">
-                Internal
-              </span>
-            </div>
-            <p className="text-teal-100">Monitor system metrics and manage users</p>
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+            <span className="px-2.5 py-1 text-xs font-semibold bg-white/20 text-white rounded-full backdrop-blur-sm">
+              Internal
+            </span>
+          </div>
+          <p className="text-teal-100 mb-6">Monitor system metrics and manage users</p>
+          <div className="flex gap-2">
+            {[
+              { id: 'overview', label: 'Overview' },
+              { id: 'queries', label: `Queries${queries.length > 0 ? ` (${queries.length})` : ''}` },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  activeTab === tab.id
+                    ? 'bg-white text-teal-700'
+                    : 'bg-white/20 text-white hover:bg-white/30'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -128,6 +144,28 @@ export default function Admin({ token }) {
               <div className="absolute inset-0 w-16 h-16 rounded-full border-[3px] border-transparent border-t-teal-500 animate-spin" />
             </div>
             <p className="text-slate-500 mt-4">Loading dashboard data...</p>
+          </div>
+        ) : activeTab === 'queries' ? (
+          <div className="space-y-4">
+            {queries.length === 0 ? (
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-12 text-center">
+                <p className="text-slate-500">No queries submitted yet.</p>
+              </div>
+            ) : queries.map((q) => (
+              <div key={q.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <div>
+                    <p className="font-semibold text-slate-800">{q.name}</p>
+                    <p className="text-sm text-slate-500">{q.email}</p>
+                  </div>
+                  <span className="text-xs text-slate-400 whitespace-nowrap">
+                    {new Date(q.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                </div>
+                <p className="text-sm font-medium text-teal-700 mb-2">{q.subject}</p>
+                <p className="text-sm text-slate-600 leading-relaxed">{q.message}</p>
+              </div>
+            ))}
           </div>
         ) : (
           <>

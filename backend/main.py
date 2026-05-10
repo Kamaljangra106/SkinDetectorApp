@@ -201,6 +201,22 @@ class AdminStats(BaseModel):
     skin_type_breakdown: dict[str, int]
 
 
+class ContactRequest(BaseModel):
+    name: str
+    email: EmailStr
+    subject: str
+    message: str
+
+
+class ContactQueryItem(BaseModel):
+    id: int
+    name: str
+    email: str
+    subject: str
+    message: str
+    created_at: str
+
+
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
@@ -422,6 +438,45 @@ async def admin_list_users(
             analysis_count=count,
         )
         for user, count in rows
+    ]
+
+
+@app.post("/api/contact", status_code=status.HTTP_201_CREATED)
+async def submit_contact(body: ContactRequest, db: Session = Depends(get_db)):
+    if not body.name.strip() or not body.message.strip() or not body.subject.strip():
+        raise HTTPException(status_code=422, detail="Name, subject, and message are required.")
+    query = models.ContactQuery(
+        name=body.name.strip(),
+        email=body.email,
+        subject=body.subject.strip(),
+        message=body.message.strip(),
+    )
+    db.add(query)
+    db.commit()
+    return {"message": "Query received. We'll get back to you shortly."}
+
+
+
+@app.get("/api/admin/contact", response_model=list[ContactQueryItem])
+async def admin_list_contact(
+    _: int = Depends(get_admin_user_id),
+    db: Session = Depends(get_db),
+):
+    queries = (
+        db.query(models.ContactQuery)
+        .order_by(models.ContactQuery.created_at.desc())
+        .all()
+    )
+    return [
+        ContactQueryItem(
+            id=q.id,
+            name=q.name,
+            email=q.email,
+            subject=q.subject,
+            message=q.message,
+            created_at=q.created_at.isoformat(),
+        )
+        for q in queries
     ]
 
 
